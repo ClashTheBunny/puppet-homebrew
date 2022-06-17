@@ -10,6 +10,7 @@ class homebrew::install {
       $link_bin           = false
       $brew_folders_extra = []
       $stat_flags = '-c \'%a\''
+      $group_stat_flags = '-c \'%G\''
       $default_permissions = $homebrew::multiuser ? {
         false => '750',
         true  => '775',
@@ -25,6 +26,7 @@ class homebrew::install {
           $link_bin           = false
           $brew_folders_extra = []
           $stat_flags = '-f \'%OLp\''
+          $group_stat_flags = '-f \'%Sg\''
       $default_permissions = $homebrew::multiuser ? {
         false => '755',
         true  => '775',
@@ -36,6 +38,7 @@ class homebrew::install {
           $link_bin           = true
           $brew_folders_extra = ["${brew_root}/Homebrew",]
           $stat_flags = '-f \'%OLp\''
+          $group_stat_flags = '-f \'%Sg\''
       $default_permissions = $homebrew::multiuser ? {
         false => '755',
         true  => '775',
@@ -121,7 +124,7 @@ class homebrew::install {
       }
       exec { "chown-${brew_folder}":
         command => "/usr/sbin/chown -R :${homebrew::group} ${brew_folder}'",
-        unless  => "/usr/bin/stat -f '%Sg' '${brew_folder}' | /usr/bin/grep -w '${homebrew::group}'",
+        unless  => "/usr/bin/stat ${group_stat_flags} '${brew_folder}' | /usr/bin/grep -w '${homebrew::group}'",
       }
       exec { "set-${brew_folder}-directory-inherit":
         command     => "/bin/chmod -R +a 'group:${homebrew::group}:allow list,add_file,search,add_subdirectory,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,file_inherit,directory_inherit' ${brew_folder}",  # lint:ignore:140chars
