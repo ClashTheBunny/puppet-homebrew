@@ -3,7 +3,7 @@ require 'puppet/provider/package'
 Puppet::Type.type(:package).provide(:brew, :parent => Puppet::Provider::Package) do
   desc 'Package management using HomeBrew on OSX'
 
-  confine :operatingsystem => :darwin
+  confine :operatingsystem => [:debian, :centos, :darwin]
 
   has_feature :installable
   has_feature :uninstallable
@@ -17,18 +17,27 @@ Puppet::Type.type(:package).provide(:brew, :parent => Puppet::Provider::Package)
     true
   elsif (File.exist?('/opt/homebrew/bin/brew')) then
     @brewbin = '/opt/homebrew/bin/brew'
+  elsif (File.exist?('/home/linuxbrew/.linuxbrew/bin/brew')) then
+    @brewbin = '/home/linuxbrew/.linuxbrew/bin/brew'
   end
 
   commands :brew => @brewbin
   commands :stat => '/usr/bin/stat'
 
   def self.execute(cmd, failonfail = false, combine = false)
-    owner = stat('-nf', '%Uu', "#{@brewbin}").to_i
-    group = stat('-nf', '%Ug', "#{@brewbin}").to_i
+    if (Gem::Platform.local.os == 'linux') then
+       user_stat_args = ['-c', '%u']
+       group_stat_args = ['-c', '%g']
+    else
+       user_stat_args = ['-nf', '%Uu']
+       group_stat_args = ['-nf', '%Ug']
+    end
+    owner = stat(*user_stat_args, "#{@brewbin}").to_i
+    group = stat(*group_stat_args, "#{@brewbin}").to_i
     home  = Etc.getpwuid(owner).dir
 
     if owner == 0
-      raise Puppet::ExecutionFailure, 'Homebrew does not support installations owned by the "root" user. Please check the permissions of /usr/local/bin/brew'
+      raise Puppet::ExecutionFailure, "Homebrew does not support installations owned by the \"root\" user. Please check the permissions of #{@brewbin}"
     end
 
     # the uid and gid can only be set if running as root
