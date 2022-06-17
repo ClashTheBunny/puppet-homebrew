@@ -5,10 +5,11 @@ class homebrew (
   $github_token               = undef,
   $group                      = 'admin',
   $multiuser                  = false,
+  $homedir = undef,
 ) {
 
-  if $::operatingsystem != 'Darwin' {
-    fail('This Module works on Mac OSX only!')
+  if ($::operatingsystem != 'Darwin') and ($::kernel != 'Linux') {
+    fail('This Module works on macOS and Linux only!')
   }
 
   if $homebrew::user == 'root' {

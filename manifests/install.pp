@@ -1,22 +1,51 @@
 class homebrew::install {
 
-  case $::facts[processors][models][0] {
-    # brew complains if it finds its bin in /usr/local/bin on Apple Silicon
-    # so we should put brew where it expects to be
-    /^Apple*/: {
-      $brew_root          = '/opt/homebrew'
+  case $::facts[kernel] {
+    /^Linux*/: {
+      $brew_root          = $homebrew::multiuser ? {
+        true => '/home/linuxbrew/.linuxbrew',
+        default => "${homebrew::homedir}/.linuxbrew",
+      }
       $inst_dir           = $brew_root
       $link_bin           = false
       $brew_folders_extra = []
+      $stat_flags = '-c \'%a\''
+      $default_permissions = $homebrew::multiuser ? {
+        false => '750',
+        true  => '775',
+      }
     }
-    /^Intel*/: {
-      $brew_root          = '/usr/local'
-      $inst_dir           = "${brew_root}/Homebrew"
-      $link_bin           = true
-      $brew_folders_extra = ["${brew_root}/Homebrew",]
+    default: {
+      case $::facts[processors][models][0] {
+        # brew complains if it finds its bin in /usr/local/bin on Apple Silicon
+        # so we should put brew where it expects to be
+        /^Apple*/: {
+          $brew_root          = '/opt/homebrew'
+          $inst_dir           = $brew_root
+          $link_bin           = false
+          $brew_folders_extra = []
+          $stat_flags = '-f \'%OLp\''
+      $default_permissions = $homebrew::multiuser ? {
+        false => '755',
+        true  => '775',
+      }
+        }
+        /^Intel*/: {
+          $brew_root          = '/usr/local'
+          $inst_dir           = "${brew_root}/Homebrew"
+          $link_bin           = true
+          $brew_folders_extra = ["${brew_root}/Homebrew",]
+          $stat_flags = '-f \'%OLp\''
+      $default_permissions = $homebrew::multiuser ? {
+        false => '755',
+        true  => '775',
+      }
+        }
+        default:   { fail("unknown arch for processor ${::facts[processors][models][0]}") }
+      }
     }
-    default:   { fail("unknown arch for processor ${::facts[processors][models][0]}") }
   }
+
   $brew_sys_folders = [
     "${brew_root}/bin",
     "${brew_root}/etc",
@@ -47,7 +76,7 @@ class homebrew::install {
   $brew_sys_chmod_folders.each | String $brew_sys_chmod_folder | {
     exec { "brew-chmod-sys-${brew_sys_chmod_folder}":
       command => "/bin/chmod -R 775 ${brew_sys_chmod_folder}",
-      unless  => "/usr/bin/stat -f '%OLp' ${brew_sys_chmod_folder} | /usr/bin/grep -w '775'",
+      unless  => "/usr/bin/stat ${stat_flags} ${brew_sys_chmod_folder} | /usr/bin/grep -w '${default_permissions}'",
       notify  => Exec["set-${brew_sys_chmod_folder}-directory-inherit"],
     }
     exec { "set-${brew_sys_chmod_folder}-directory-inherit":
@@ -87,7 +116,8 @@ class homebrew::install {
     $brew_folders.each | String $brew_folder | {
       exec { "chmod-${brew_folder}":
         command => "/bin/chmod -R 775 ${brew_folder}",
-        unless  => "/usr/bin/stat -f '%OLp' '${brew_folder}' | /usr/bin/grep -w '775'",
+        unless  => "/usr/bin/stat -f '%OLp'     '${brew_folder}' | /usr/bin/grep -w '775'",
+        unless  => "/usr/bin/stat ${stat_flags} '${brew_folder}' | /usr/bin/grep -w '${default_permissions}'",
         notify  => Exec["set-${brew_folder}-directory-inherit"]
       }
       exec { "chown-${brew_folder}":

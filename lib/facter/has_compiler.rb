@@ -13,6 +13,12 @@
 #   None
 
 Facter.add(:has_compiler) do
+  setcode do
+    File.exists?('/usr/bin/gcc')
+  end
+end
+
+Facter.add(:has_compiler) do
   confine :operatingsystem => 'Darwin'
   setcode do
     # /usr/bin/cc exists in Mavericks, but it's not real
