@@ -116,7 +116,6 @@ class homebrew::install {
     $brew_folders.each | String $brew_folder | {
       exec { "chmod-${brew_folder}":
         command => "/bin/chmod -R 775 ${brew_folder}",
-        unless  => "/usr/bin/stat -f '%OLp'     '${brew_folder}' | /usr/bin/grep -w '775'",
         unless  => "/usr/bin/stat ${stat_flags} '${brew_folder}' | /usr/bin/grep -w '${default_permissions}'",
         notify  => Exec["set-${brew_folder}-directory-inherit"]
       }
