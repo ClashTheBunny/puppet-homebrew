@@ -52,6 +52,20 @@ class homebrew::install {
     }
   }
 
+  $root_tree = split($brew_root, /\//)
+
+  $root_tree_list = $root_tree[1,-1].reduce([]) |$memo, $value| {
+     $memo << "${memo[-1]}/${value}"
+  }
+
+  $root_tree_list.each | String $brew_root_sys_folder | {
+    if !defined(File[$brew_root_sys_folder]) {
+      file { $brew_root_sys_folder:
+        ensure => directory,
+      }
+    }
+  }
+
   $brew_sys_folders = [
     "${brew_root}/bin",
     "${brew_root}/etc",
