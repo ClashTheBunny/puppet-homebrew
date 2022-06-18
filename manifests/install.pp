@@ -9,6 +9,7 @@ class homebrew::install {
       $stat_flags = '-c \'%a\''
       $group_stat_flags = '-c \'%G\''
       $chown = '/usr/bin/chown'
+      $chmod_permissions = 'g+rwx'
       $default_permissions = $homebrew::multiuser ? {
         false => '750',
         true  => '775',
@@ -26,6 +27,7 @@ class homebrew::install {
           $stat_flags = '-f \'%OLp\''
           $group_stat_flags = '-f \'%Sg\''
           $chown = '/usr/sbin/chown'
+          $chmod_permissions = '+a \'group:primarygroup:allow list,add_file,search,add_subdirectory,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,file_inherit,directory_inherit\''
       $default_permissions = $homebrew::multiuser ? {
         false => '755',
         true  => '775',
@@ -39,6 +41,7 @@ class homebrew::install {
           $stat_flags = '-f \'%OLp\''
           $group_stat_flags = '-f \'%Sg\''
           $chown = '/usr/sbin/chown'
+          $chmod_permissions = '+a \'group:primarygroup:allow list,add_file,search,add_subdirectory,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,file_inherit,directory_inherit\''
       $default_permissions = $homebrew::multiuser ? {
         false => '755',
         true  => '775',
@@ -97,7 +100,7 @@ class homebrew::install {
       notify  => Exec["set-${brew_sys_chmod_folder}-directory-inherit"],
     }
     exec { "set-${brew_sys_chmod_folder}-directory-inherit":
-      command     => "/bin/chmod -R +a 'group:${homebrew::group}:allow list,add_file,search,add_subdirectory,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,file_inherit,directory_inherit' ${brew_sys_chmod_folder}", # lint:ignore:140chars
+      command     => "/bin/chmod -R ${chmod_permissions} ${brew_sys_chmod_folder}", # lint:ignore:140chars
       refreshonly => true,
     }
   }
