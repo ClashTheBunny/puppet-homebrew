@@ -100,7 +100,7 @@ class homebrew::install {
       notify  => Exec["set-${brew_sys_chmod_folder}-directory-inherit"],
     }
     exec { "set-${brew_sys_chmod_folder}-directory-inherit":
-      command     => "/bin/chmod -R ${chmod_permissions} ${brew_sys_chmod_folder}", # lint:ignore:140chars
+      command     => "/bin/chmod -R ${chmod_permissions} ${brew_sys_chmod_folder}",
       refreshonly => true,
     }
   }
@@ -144,7 +144,7 @@ class homebrew::install {
         unless  => "/usr/bin/stat ${group_stat_flags} '${brew_folder}' | /usr/bin/grep -w '${homebrew::group}'",
       }
       exec { "set-${brew_folder}-directory-inherit":
-        command     => "/bin/chmod -R +a 'group:${homebrew::group}:allow list,add_file,search,add_subdirectory,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,file_inherit,directory_inherit' ${brew_folder}",  # lint:ignore:140chars
+        command     => "/bin/chmod -R ${chmod_permissions} ${brew_folder}",
         refreshonly => true,
       }
     }
