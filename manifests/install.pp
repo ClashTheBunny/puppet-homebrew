@@ -86,6 +86,7 @@ class homebrew::install {
   }
 
   $brew_sys_chmod_folders = [
+    "${brew_root}",
     "${brew_root}/bin",
     "${brew_root}/include",
     "${brew_root}/lib",
