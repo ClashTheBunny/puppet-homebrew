@@ -5,7 +5,7 @@ class homebrew (
   $github_token               = undef,
   $group                      = 'admin',
   $multiuser                  = false,
-  $homedir = undef,
+  $root                       = '/home/linuxbrew/.linuxbrew',
 ) {
 
   if ($::operatingsystem != 'Darwin') and ($::kernel != 'Linux') {

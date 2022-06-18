@@ -2,10 +2,7 @@ class homebrew::install {
 
   case $::facts[kernel] {
     /^Linux*/: {
-      $brew_root          = $homebrew::multiuser ? {
-        true => '/home/linuxbrew/.linuxbrew',
-        default => "${homebrew::homedir}/.linuxbrew",
-      }
+      $brew_root          = $homebrew::root
       $inst_dir           = $brew_root
       $link_bin           = false
       $brew_folders_extra = []
