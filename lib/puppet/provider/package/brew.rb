@@ -12,13 +12,12 @@ Puppet::Type.type(:package).provide(:brew, :parent => Puppet::Provider::Package)
 
   has_feature :install_options
 
-  if (File.exist?('/usr/local/bin/brew')) then
-    @brewbin = '/usr/local/bin/brew'
-    true
-  elsif (File.exist?('/opt/homebrew/bin/brew')) then
+  if (File.exist?('/opt/homebrew/bin/brew')) then
     @brewbin = '/opt/homebrew/bin/brew'
   elsif (File.exist?('/home/linuxbrew/.linuxbrew/bin/brew')) then
     @brewbin = '/home/linuxbrew/.linuxbrew/bin/brew'
+  elsif (File.exist?('/usr/local/bin/brew')) then
+    @brewbin = '/usr/local/bin/brew'
   end
 
   commands :brew => @brewbin
